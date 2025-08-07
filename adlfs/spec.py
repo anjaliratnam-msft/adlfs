@@ -1962,7 +1962,7 @@ class AzureBlobFile(AbstractBufferedFile):
         self.mode = mode
         self.container_name = container_name
         self.blob = blob
-        self.block_size = block_size
+        self.block_size = self.fs.blocksize or block_size
         self.version_id = (
             _coalesce_version_id(version_id, path_version_id)
             if self.fs.version_aware
@@ -2173,7 +2173,7 @@ class AzureBlobFile(AbstractBufferedFile):
             commit_kw["headers"] = {"If-None-Match": "*"}
         if self.mode in {"wb", "xb"}:
             try:
-                for chunk in self._get_chunks(data):
+                for chunk in self._get_chunks(data, chunk_size=self.block_size):
                     async with self.container_client.get_blob_client(
                         blob=self.blob
                     ) as bc:
