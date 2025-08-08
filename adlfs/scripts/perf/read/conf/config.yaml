@@ -1,7 +1,7 @@
 defaults:
   - model: 1GB
   - filelike-impl: adlfs
-  - write-method: read
+  - read-method: read
   - block-size: 50MiB
   - _self_
 
@@ -17,6 +17,6 @@ hydra:
     params:
       filelike-impl: adlfs
       num-runs: 5
-      write-method: read
+      read-method: read
       model: 5KB,100KB,100MB,1GB,5GB
       block-size: 5MiB,50MiB
