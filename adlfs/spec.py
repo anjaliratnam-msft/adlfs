@@ -376,7 +376,7 @@ class AzureBlobFileSystem(AsyncFileSystem):
             batch_size = _get_batch_size()
             if batch_size > 0:
                 max_concurrency = batch_size
-        self.max_concurrency = int(os.getenv("AZURE_STORAGE_MAX_CONCURRENCY")) or max_concurrency
+        self.max_concurrency = int(os.getenv("AZURE_STORAGE_MAX_CONCURRENCY"), max_concurrency)
         # self.max_concurrency = max_concurrency
 
     @classmethod
