@@ -1,6 +1,6 @@
 defaults:
   - model: 1GB
-  - filelike_impl: adlfs
+  - filelike-impl: adlfs
   - read-method: read
   - block-size: 50MiB
   - _self_
@@ -15,7 +15,7 @@ num-runs: 1
 hydra:
   sweeper:
     params:
-      filelike_impl: adlfs
+      filelike-impl: adlfs
       num-runs: 5
       read-method: read
       model: 5KB,100KB,100MB,1GB,5GB
