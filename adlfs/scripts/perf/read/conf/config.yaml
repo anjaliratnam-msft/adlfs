@@ -1,0 +1,22 @@
+defaults:
+  - model: 1GB
+  - filelike-impl: adlfs
+  - write-method: read
+  - block-size: 50MiB
+  - _self_
+
+blob:
+  account: os.getenv("AZURE_STORAGE_ACCOUNT_NAME")
+  container: models
+  sas-env-var: AZURE_STORAGE_SAS_TOKEN
+
+num-runs: 1
+
+hydra:
+  sweeper:
+    params:
+      filelike-impl: adlfs
+      num-runs: 5
+      write-method: read
+      model: 5KB,100KB,100MB,1GB,5GB
+      block-size: 5MiB,50MiB
