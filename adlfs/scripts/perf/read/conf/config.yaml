@@ -19,4 +19,4 @@ hydra:
       num-runs: 5
       read-method: read,torch-load
       model: 5KB-model,100KB-model,100MB-model,1GB-model,5GB-model
-      block-size: 5MiB,50MiB
+      block-size: 1KiB
