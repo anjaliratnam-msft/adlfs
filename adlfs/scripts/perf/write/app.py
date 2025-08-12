@@ -37,8 +37,6 @@ def write_perf(cfg):
                 torch.save(content, f)
             elif cfg["write-method"]["name"] == "writeall":
                 f.write(content)
-            elif cfg["write-method"]["name"] == "read":
-                f.read()
         duration = time.time() - start
         del f
         LOGGER.info(f"Run %s - Seconds to write model: %s", i, duration)
