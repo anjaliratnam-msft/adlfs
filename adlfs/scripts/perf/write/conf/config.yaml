@@ -17,6 +17,6 @@ hydra:
     params:
       filelike-impl: adlfs
       num-runs: 5
-      write-method: write
-      model: 5KiB-model,100KiB-model,100MiB-model,1GiB-model,5GiB-model
+      write-method: write,torch-save
+      model: 5KiB-model,100KiB-model,100MiB-model,1GiB-model,5GiB-model,5KB,100KB,100MB,1GB,5GB
       block-size: 1KiB

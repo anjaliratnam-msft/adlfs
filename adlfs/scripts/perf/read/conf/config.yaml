@@ -18,5 +18,5 @@ hydra:
       filelike-impl: adlfs
       num-runs: 5
       read-method: read,torch-load
-      model: 5KB-model,100KB-model,100MB-model,1GB-model,5GB-model
+      model: 5KB,100KB,100MB,1GB,5GB
       block-size: 1KiB
