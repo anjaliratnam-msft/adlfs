@@ -2186,7 +2186,6 @@ class AzureBlobFile(AbstractBufferedFile):
         if self.mode in {"wb", "xb"}:
             try:
                 max_concurrency = max_concurrency or self.fs.max_concurrency or 1
-                print(f"max_concurrency: {max_concurrency}")
                 semaphore = asyncio.Semaphore(max_concurrency)
                 tasks = []
                 block_ids = self._block_list or []
