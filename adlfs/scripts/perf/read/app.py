@@ -34,6 +34,11 @@ def torch_load(cfg):
                 torch.load(f, weights_only=True)
             elif cfg["read-method"]["name"] == "readall":
                 f.read()
+            elif cfg["read-method"]["name"] == "read-partial":
+                while True:
+                    chunk = f.read(1024) 
+                    if not chunk:
+                        break
         duration = time.time() - start
         del f
         del kwargs
