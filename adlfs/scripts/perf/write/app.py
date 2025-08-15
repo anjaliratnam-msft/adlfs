@@ -91,8 +91,13 @@ def open_local_model(cfg):
 
 def preload_model(cfg):
     if cfg["write-method"]["name"] == "torch-save":
-        with open_local_model(cfg) as f:
-            return torch.load(f, weights_only=True)
+        if cfg["model"]["name"] == "small-phi-4":
+            with BlobIO(f"https://{cfg['blob']['account']}.blob.core.windows.net/perf/{cfg['model']['name']}", mode="rb") as f:
+                return torch.load(f, weights_only=True)
+        else:
+            with open_local_model(cfg) as f:
+                return torch.load(f, weights_only=True)
+        
     if cfg["write-method"]["name"] == "writeall" or cfg["write-method"]["name"] == "write-partial":
         return preload_model_bytes(cfg)
 

@@ -2150,6 +2150,7 @@ class AzureBlobFile(AbstractBufferedFile):
     def _get_chunks(self, data, chunk_size=1024**3):  # Keeping the chunk size as 1 GB
         start = 0
         length = len(data)
+        # print(f"length of data: {length}")
         while start < length:
             end = min(start + chunk_size, length)
             yield data[start:end]
@@ -2160,6 +2161,7 @@ class AzureBlobFile(AbstractBufferedFile):
             async with self.container_client.get_blob_client(
                blob=self.blob
             ) as bc:
+                # print(f"length of chunk: {len(chunk)}")
                 await bc.stage_block(
                     block_id=block_id,
                     data=chunk,

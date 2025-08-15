@@ -16,7 +16,7 @@ hydra:
   sweeper:
     params:
       filelike-impl: adlfs
-      num-runs: 5
+      num-runs: 1
       write-method: torch-save
-      model: 5KiB-model,100KiB-model,100MiB-model,1GiB-model,5GiB-model
-      block-size: 5MiB,50MiB,1GB
+      model: small-phi-4
+      block-size: 5MiB,50MiB,1GiB
