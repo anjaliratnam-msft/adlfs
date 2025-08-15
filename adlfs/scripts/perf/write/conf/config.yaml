@@ -19,4 +19,4 @@ hydra:
       num-runs: 1
       write-method: torch-save
       model: small-phi-4
-      block-size: 5MiB,50MiB,1GiB
+      block-size: 5MiB,50MiB,1GB
