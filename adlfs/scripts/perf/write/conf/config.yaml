@@ -17,6 +17,6 @@ hydra:
     params:
       filelike-impl: adlfs
       num-runs: 5
-      write-method: write-partial
-      model: 5KB,100KB,100MB,1GB,5GB,small-phi-4
+      write-method: write-partial, write
+      model: 27GB
       block-size: 5MiB
