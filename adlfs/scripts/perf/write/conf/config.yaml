@@ -19,4 +19,4 @@ hydra:
       num-runs: 5
       write-method: write-partial
       model: 5KB,100KB,100MB,1GB,5GB,small-phi-4
-      block-size: 5MiB,50MiB,1GB
+      block-size: 5MiB
