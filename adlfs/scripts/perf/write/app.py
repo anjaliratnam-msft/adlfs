@@ -92,7 +92,7 @@ def open_local_model(cfg):
 def preload_model(cfg):
     if cfg["write-method"]["name"] == "torch-save":
         if cfg["model"]["name"] == "small-phi-4.pth":
-            with BlobIO(f"https://{os.getenv("AZURE_STORAGE_ACCOUNT_NAME")}.blob.core.windows.net/perf/{cfg['model']['name']}", mode="rb") as f:
+            with BlobIO(os.getenv("AZURE_STORAGE_URL_WITH_SAS"), mode="rb") as f:
                 return torch.load(f, weights_only=True)
         else:
             with open_local_model(cfg) as f:
