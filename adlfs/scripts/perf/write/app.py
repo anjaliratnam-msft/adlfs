@@ -88,16 +88,16 @@ def open_local_model(cfg):
     return open(os.path.join(LOCAL_MODELS_DIR, cfg["model"]["name"]), "rb")
 
 def preload_model(cfg):
-    if cfg["write-method"]["name"] == "torch-save":
-        if cfg["model"]["name"] == "small-phi-4.pth":
-            blob_url = f"https://{os.getenv("AZURE_STORAGE_ACCOUNT_NAME")}.blob.core.windows.net/perf/{cfg['model']['name']}"
-            sas_token = retrieve_sas_token(cfg)
-            blob_url += "?" + sas_token
-            with BlobIO(blob_url, mode="rb") as f:
-                return torch.load(f, weights_only=True)
-        else:
-            with open_local_model(cfg) as f:
-                return torch.load(f, weights_only=True)
+    
+    if cfg["model"]["name"] == "small-phi-4.pth":
+        blob_url = f"https://{os.getenv("AZURE_STORAGE_ACCOUNT_NAME")}.blob.core.windows.net/perf/{cfg['model']['name']}"
+        sas_token = retrieve_sas_token(cfg)
+        blob_url += "?" + sas_token
+        with BlobIO(blob_url, mode="rb") as f:
+            return torch.load(f, weights_only=True)
+    elif cfg["write-method"]["name"] == "torch-save":
+        with open_local_model(cfg) as f:
+            return torch.load(f, weights_only=True)
         
     if cfg["write-method"]["name"] == "writeall" or cfg["write-method"]["name"] == "write-partial":
         return preload_model_bytes(cfg)
