@@ -25,7 +25,6 @@ def write_perf(cfg):
     output_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
     results_dir = os.path.join(output_dir, "results")
     os.makedirs(results_dir, exist_ok=True)
-
     write_result_metadata(results_dir, cfg)
     content = preload_model(cfg)
     
@@ -88,11 +87,13 @@ def get_writeable_file(cfg, **kwargs):
 def open_local_model(cfg):
     return open(os.path.join(LOCAL_MODELS_DIR, cfg["model"]["name"]), "rb")
 
-
 def preload_model(cfg):
     if cfg["write-method"]["name"] == "torch-save":
         if cfg["model"]["name"] == "small-phi-4.pth":
-            with BlobIO(os.getenv("AZURE_STORAGE_URL_WITH_SAS"), mode="rb") as f:
+            blob_url = f"https://{os.getenv("AZURE_STORAGE_ACCOUNT_NAME")}.blob.core.windows.net/perf/{cfg['model']['name']}"
+            sas_token = retrieve_sas_token(cfg)
+            blob_url += "?" + sas_token
+            with BlobIO(blob_url, mode="rb") as f:
                 return torch.load(f, weights_only=True)
         else:
             with open_local_model(cfg) as f:
