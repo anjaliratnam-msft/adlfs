@@ -375,8 +375,8 @@ class AzureBlobFileSystem(AsyncFileSystem):
             batch_size = _get_batch_size()
             if batch_size > 0:
                 max_concurrency = batch_size
-        self.max_concurrency = int(os.getenv("AZURE_STORAGE_MAX_CONCURRENCY", max_concurrency))
-        # self.max_concurrency = max_concurrency
+        # self.max_concurrency = int(os.getenv("AZURE_STORAGE_MAX_CONCURRENCY", max_concurrency))
+        self.max_concurrency = max_concurrency
 
     @classmethod
     def _strip_protocol(cls, path: str):
@@ -2188,22 +2188,22 @@ class AzureBlobFile(AbstractBufferedFile):
             commit_kw["headers"] = {"If-None-Match": "*"}
         if self.mode in {"wb", "xb"}:
             try:
-                max_concurrency = max_concurrency or self.fs.max_concurrency or 1
-                semaphore = asyncio.Semaphore(max_concurrency)
-                tasks = []
-                block_ids = self._block_list or []
-                start_idx = len(block_ids)
-                chunks = list(self._get_chunks(data))
-                for _ in range(len(chunks)):
-                    block_ids.append(block_id)
-                    block_id = self._get_block_id(block_ids)
+                # max_concurrency = max_concurrency or self.fs.max_concurrency or 1
+                # semaphore = asyncio.Semaphore(max_concurrency)
+                # tasks = []
+                # block_ids = self._block_list or []
+                # start_idx = len(block_ids)
+                # chunks = list(self._get_chunks(data))
+                # for _ in range(len(chunks)):
+                #     block_ids.append(block_id)
+                #     block_id = self._get_block_id(block_ids)
 
-                if chunks:
-                    self._block_list = block_ids
-                for chunk, block_id in zip(chunks, block_ids[start_idx:]):
-                    tasks.append(self._upload(chunk, block_id, semaphore))
+                # if chunks:
+                #     self._block_list = block_ids
+                # for chunk, block_id in zip(chunks, block_ids[start_idx:]):
+                #     tasks.append(self._upload(chunk, block_id, semaphore))
                
-                await asyncio.gather(*tasks)
+                # await asyncio.gather(*tasks)
 
                 # for chunk in self._get_chunks(data, chunk_size=self.block_size):
                 #     async with self.container_client.get_blob_client(
@@ -2217,17 +2217,17 @@ class AzureBlobFile(AbstractBufferedFile):
                 #         self._block_list.append(block_id)
                 #         block_id = self._get_block_id(self._block_list)
 
-                # for chunk in self._get_chunks(data):
-                #     async with self.container_client.get_blob_client(
-                #         blob=self.blob
-                #     ) as bc:
-                #         await bc.stage_block(
-                #             block_id=block_id,
-                #             data=chunk,
-                #             length=len(chunk),
-                #         )
-                #         self._block_list.append(block_id)
-                #         block_id = self._get_block_id(self._block_list)
+                for chunk in self._get_chunks(data):
+                    async with self.container_client.get_blob_client(
+                        blob=self.blob
+                    ) as bc:
+                        await bc.stage_block(
+                            block_id=block_id,
+                            data=chunk,
+                            length=len(chunk),
+                        )
+                        self._block_list.append(block_id)
+                        block_id = self._get_block_id(self._block_list)
 
                 if final:
                     block_list = [BlobBlock(_id) for _id in self._block_list]

@@ -33,7 +33,7 @@ def torch_load(cfg):
             if cfg["read-method"]["name"] == "torch-load":
                 torch.load(f, weights_only=True)
             elif cfg["read-method"]["name"] == "readall":
-                f.read()
+                f.read(25 * 1024**3)
             elif cfg["read-method"]["name"] == "read-partial":
                 while True:
                     chunk = f.read(1024) 
