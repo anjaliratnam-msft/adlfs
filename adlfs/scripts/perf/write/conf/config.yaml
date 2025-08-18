@@ -18,5 +18,5 @@ hydra:
       filelike-impl: adlfs
       num-runs: 5
       write-method: write
-      model: 27GB
+      model: 100MB
       block-size: 5MiB,50MiB,1GB
