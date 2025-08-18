@@ -100,7 +100,7 @@ def preload_model(cfg):
         sas_token = retrieve_sas_token(cfg)
         blob_url += "?" + sas_token
         with BlobIO(blob_url, mode="rb") as f:
-            return f.read(23 * 1024**3) 
+            return f.read(21 * 1024**3) 
     elif cfg["write-method"]["name"] == "torch-save":
         with open_local_model(cfg) as f:
             return torch.load(f, weights_only=True)
