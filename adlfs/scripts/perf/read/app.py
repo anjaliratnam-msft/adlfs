@@ -83,7 +83,7 @@ def get_readable_file(cfg, **kwargs):
         fs = AzureBlobFileSystem(
             account_name=cfg["blob"]["account"],
             connection_string=os.getenv("AZURE_STORAGE_CONNECTION_STRING"),
-            blocksize=cfg["block-size"]["size"],
+            # blocksize=cfg["block-size"]["size"],
         )
         # return fs.open(f"az://{cfg['blob']['container']}/write-output/{cfg['model']['name']}", mode="rb")
         return fs.open(f"az://perf/{cfg['model']['name']}", mode="rb")

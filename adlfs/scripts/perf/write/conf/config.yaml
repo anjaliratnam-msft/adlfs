@@ -19,4 +19,4 @@ hydra:
       num-runs: 5
       write-method: write
       model: 27GB
-      block-size: 5MiB,50MiB,1GB
+      block-size: 5MiB

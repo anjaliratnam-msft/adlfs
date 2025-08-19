@@ -79,7 +79,7 @@ def get_writeable_file(cfg, **kwargs):
         fs = AzureBlobFileSystem(
             account_name=cfg["blob"]["account"],
             connection_string=os.getenv("AZURE_STORAGE_CONNECTION_STRING"),
-            blocksize=cfg["block-size"]["size"],
+            # blocksize=cfg["block-size"]["size"],
         )
         return fs.open(f"az://{cfg['blob']['container']}/write-output/{cfg['model']['name']}", "wb")
     raise ValueError(f"Unknown filelike-impl: {cfg['filelike-impl']}")

@@ -19,4 +19,4 @@ hydra:
       num-runs: 5
       read-method: read
       model: 27GB
-      block-size: 5MiB,50MiB
+      block-size: 5MiB
