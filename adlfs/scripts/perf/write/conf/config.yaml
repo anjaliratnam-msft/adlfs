@@ -17,6 +17,6 @@ hydra:
     params:
       filelike-impl: adlfs
       num-runs: 5
-      write-method: write
-      model: 5GB,27GB
+      write-method: torch-save
+      model: 5GiB-model,small-phi-4
       block-size: 50MiB

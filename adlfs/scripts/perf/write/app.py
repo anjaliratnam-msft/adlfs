@@ -35,7 +35,6 @@ def write_perf(cfg):
             if cfg["write-method"]["name"] == "torch-save":
                 torch.save(content, f)
             elif cfg["write-method"]["name"] == "writeall":
-                print("writing")
                 f.write(content)
             elif cfg["write-method"]["name"] == "write-partial":
                 for j in range(0, len(content), 1024):
