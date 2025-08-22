@@ -11,6 +11,7 @@ import os
 import re
 import typing
 import warnings
+import sys
 import weakref
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
@@ -69,7 +70,7 @@ VERSIONED_BLOB_PROPERTIES = [
     "is_current_version",
 ]
 _ROOT_PATH = "/"
-_DEFAULT_BLOCK_SIZE = 4 * 2**20
+_DEFAULT_BLOCK_SIZE = 50 * 2**20
 _SOCKET_TIMEOUT_DEFAULT = object()
 
 _USER_AGENT = f"adlfs/{__version__}"
@@ -375,8 +376,8 @@ class AzureBlobFileSystem(AsyncFileSystem):
             batch_size = _get_batch_size()
             if batch_size > 0:
                 max_concurrency = batch_size
-        # self.max_concurrency = int(os.getenv("AZURE_STORAGE_MAX_CONCURRENCY", max_concurrency))
-        self.max_concurrency = max_concurrency
+        self.max_concurrency = int(os.getenv("AZURE_STORAGE_MAX_CONCURRENCY", max_concurrency))
+        # self.max_concurrency = max_concurrency
 
     @classmethod
     def _strip_protocol(cls, path: str):
@@ -1903,8 +1904,8 @@ class AzureBlobFileSystem(AsyncFileSystem):
 class AzureBlobFile(AbstractBufferedFile):
     """File-like operations on Azure Blobs"""
 
-    # DEFAULT_BLOCK_SIZE = _DEFAULT_BLOCK_SIZE
-    DEFAULT_BLOCK_SIZE = 5 * 2**20
+    DEFAULT_BLOCK_SIZE = _DEFAULT_BLOCK_SIZE
+    # DEFAULT_BLOCK_SIZE = 5 * 2**20
 
     def __init__(
         self,
@@ -2149,28 +2150,29 @@ class AzureBlobFile(AbstractBufferedFile):
 
     _initiate_upload = sync_wrapper(_async_initiate_upload)
 
-    def _get_chunks(self, data, chunk_size=1024**3):  # Keeping the chunk size as 1 GB
+    
+    def _get_chunks(self, data):
         start = 0
         length = len(data)
-        # print(f"length of data: {length}")
         while start < length:
-            end = min(start + chunk_size, length)
-            yield data[start:end]
+            end = min(start + self.blocksize, length)
+            yield start, end
             start = end
 
-    async def _upload(self, chunk, block_id, semaphore):
+    async def _stage_block(self, data, start, end, block_id, semaphore):
+        if self._sdk_supports_memoryview_for_writes():
+            # Use memoryview to avoid making copies of the bytes when we splice for partitioned uploads
+            data = memoryview(data)
         async with semaphore:
-            async with self.container_client.get_blob_client(
-               blob=self.blob
-            ) as bc:
-                # print(f"length of chunk: {len(chunk)}")
+            async with self.container_client.get_blob_client(blob=self.blob) as bc:
                 await bc.stage_block(
                     block_id=block_id,
-                    data=chunk,
-                    length=len(chunk),
+                    data=data[start:end],
+                    length=end - start,
                 )
+                return block_id
 
-    async def _async_upload_chunk(self, final: bool = False, max_concurrency=None, **kwargs):
+    async def _async_upload_chunk(self, final: bool = False, **kwargs):
         """
         Write one part of a multi-block file upload
 
@@ -2181,54 +2183,24 @@ class AzureBlobFile(AbstractBufferedFile):
             self.autocommit is True.
 
         """
-        data = memoryview(self.buffer.getvalue())
+        data = self.buffer.getvalue()
         length = len(data)
-        block_id = self._get_block_id(self._block_list)
+        block_id = self._get_block_id()
         commit_kw = {}
         if self.mode == "xb":
             commit_kw["headers"] = {"If-None-Match": "*"}
         if self.mode in {"wb", "xb"}:
             try:
-                # max_concurrency = max_concurrency or self.fs.max_concurrency or 1
-                # semaphore = asyncio.Semaphore(max_concurrency)
-                # tasks = []
-                # block_ids = self._block_list or []
-                # start_idx = len(block_ids)
-                # chunks = list(self._get_chunks(data))
-                # for _ in range(len(chunks)):
-                #     block_ids.append(block_id)
-                #     block_id = self._get_block_id(block_ids)
-
-                # if chunks:
-                #     self._block_list = block_ids
-                # for chunk, block_id in zip(chunks, block_ids[start_idx:]):
-                #     tasks.append(self._upload(chunk, block_id, semaphore))
-               
-                # await asyncio.gather(*tasks)
-
-                # for chunk in self._get_chunks(data, chunk_size=self.block_size):
-                #     async with self.container_client.get_blob_client(
-                #         blob=self.blob
-                #     ) as bc:
-                #         await bc.stage_block(
-                #             block_id=block_id,
-                #             data=chunk,
-                #             length=len(chunk),
-                #         )
-                #         self._block_list.append(block_id)
-                #         block_id = self._get_block_id(self._block_list)
-
-                for chunk in self._get_chunks(data):
-                    async with self.container_client.get_blob_client(
-                        blob=self.blob
-                    ) as bc:
-                        await bc.stage_block(
-                            block_id=block_id,
-                            data=chunk,
-                            length=len(chunk),
-                        )
-                        self._block_list.append(block_id)
-                        block_id = self._get_block_id(self._block_list)
+                max_concurrency = self.fs.max_concurrency or 1
+                semaphore = asyncio.Semaphore(max_concurrency)
+                tasks = []
+                for start, end in self._get_chunks(data):
+                    tasks.append(
+                        self._stage_block(data, start, end, block_id, semaphore)
+                    )
+                    block_id = self._get_block_id()
+                ids = await asyncio.gather(*tasks)
+                self._block_list.extend(ids)
 
                 if final:
                     block_list = [BlobBlock(_id) for _id in self._block_list]
@@ -2245,7 +2217,7 @@ class AzureBlobFile(AbstractBufferedFile):
                 # which is throws an InvalidHeader error from Azure, so instead
                 # of staging a block, we directly upload the empty blob
                 # This isn't actually tested, since Azureite behaves differently.
-                if block_id == self._get_block_id([]) and length == 0 and final:
+                if len(self._block_list) == 0 and length == 0 and final:
                     async with self.container_client.get_blob_client(
                         blob=self.blob
                     ) as bc:
@@ -2284,8 +2256,8 @@ class AzureBlobFile(AbstractBufferedFile):
             )
 
     @staticmethod
-    def _get_block_id(block_list: List[str]) -> str:
-        return uuid4().hex if block_list else "0" * 32
+    def _get_block_id() -> str:
+        return uuid4().hex
 
     _upload_chunk = sync_wrapper(_async_upload_chunk)
 
@@ -2306,3 +2278,12 @@ class AzureBlobFile(AbstractBufferedFile):
         self.__dict__.update(state)
         self.loop = self._get_loop()
         self.container_client = self._get_container_client()
+
+    def _sdk_supports_memoryview_for_writes(self) -> bool:
+        # The SDK validates iterable bytes objects passed to its HTTP request layer
+        # expose an __iter__() method. However, memoryview objects did not expose an
+        # __iter__() method till Python 3.10.
+        #
+        # We still want to leverage memorviews when we can to avoid unnecessary copies. So
+        # we check the Python version to determine if we can use memoryviews for writes.
+        return sys.version_info >= (3, 10)
