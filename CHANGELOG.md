@@ -2,7 +2,7 @@
 
 Unreleased
 ----------
-- .
+- Fixed `ls()` returning incorrect results when a file shares the same prefix as other files in the same directory (#409)
 
 2026.5.0
 --------
