@@ -2610,3 +2610,12 @@ def test_etag_normalized_form(storage):
 )
 def test_striping_etag(input_etag, expected_etag):
     assert _normalize_etag_quotes(input_etag) == expected_etag
+
+
+def test_rm_empty_list(storage):
+    fs = AzureBlobFileSystem(
+        account_name=storage.account_name,
+        connection_string=CONN_STR,
+    )
+    
+    fs.rm([])

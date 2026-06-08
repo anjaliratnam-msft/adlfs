@@ -2,7 +2,7 @@
 
 Unreleased
 ----------
-- .
+- Fixed issue where calling rm() on an empty list returns an error (#363)
 
 2026.5.0
 --------

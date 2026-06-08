@@ -1231,6 +1231,9 @@ class AzureBlobFileSystem(AsyncFileSystem):
             If False, `self._expand_path` call will be skipped. This is more
             efficient when you don't need the operation.
         """
+        if isinstance(path, list) and len(path) == 0:
+            return
+        
         if expand_path:
             path = await self._expand_path(
                 path,
