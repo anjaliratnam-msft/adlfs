@@ -1233,7 +1233,7 @@ class AzureBlobFileSystem(AsyncFileSystem):
         """
         if isinstance(path, list) and len(path) == 0:
             return
-        
+
         if expand_path:
             path = await self._expand_path(
                 path,

@@ -2617,5 +2617,5 @@ def test_rm_empty_list(storage):
         account_name=storage.account_name,
         connection_string=CONN_STR,
     )
-    
+
     fs.rm([])
