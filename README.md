@@ -91,14 +91,18 @@ By default, adlfs connects to the Azure public cloud (`blob.core.windows.net`). 
 fs = AzureBlobFileSystem(
     account_name="myaccount",
     account_host="myaccount.<your-endpoint>",
-    credential=DefaultAzureCredential(),
+)
+
+# Azure China cloud
+fs = AzureBlobFileSystem(
+    account_name="myaccount",
+    account_host="myaccount.blob.core.chinacloudapi.cn",
 )
 
 # Microsoft OneLake
 fs = AzureBlobFileSystem(
     account_name="onelake",
     account_host="onelake.dfs.fabric.microsoft.com",
-    credential=DefaultAzureCredential(),
 )
 ```
 
