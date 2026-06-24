@@ -2,7 +2,7 @@
 
 Unreleased
 ----------
-- Fixed a bug in `_strip_protocol` and `_get_kwargs_from_urls` to correctly handle Azure sovereign cloud URLs (#402)
+- .
 
 2026.5.0
 --------

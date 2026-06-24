@@ -412,8 +412,7 @@ class AzureBlobFileSystem(AsyncFileSystem):
         if isinstance(path, list):
             return [cls._strip_protocol(p) for p in path]
 
-        # STORE_SUFFIX = ".dfs.core.windows.net"
-        AZURE_STORAGE_HOST_RE = re.compile(r".+\.(dfs|blob)\.core\.", re.IGNORECASE)
+        STORE_SUFFIX = ".dfs.core.windows.net"
         logger.debug(f"_strip_protocol for {path}")
         if isinstance(cls.protocol, str):
             # The protocol can be either a string or a tuple of strings.
@@ -434,7 +433,9 @@ class AzureBlobFileSystem(AsyncFileSystem):
         # the format {host}/{path}
         # here host is the container_name
         elif ops.get("host", None):
-            if not AZURE_STORAGE_HOST_RE.match(ops["host"]):
+            if (
+                ops["host"].count(STORE_SUFFIX) == 0
+            ):  # no store-suffix, so this is container-name
                 ops["path"] = ops["host"] + ops["path"]
         url_query = ops.get("url_query")
         if url_query is not None:
@@ -451,7 +452,9 @@ class AzureBlobFileSystem(AsyncFileSystem):
         out = {}
         host = ops.get("host", None)
         if host:
-            match = re.match(r"(?P<account_name>[^.]+)\.(dfs|blob)\.core\.", host)
+            match = re.match(
+                r"(?P<account_name>.+)\.(dfs|blob)\.core\.windows\.net", host
+            )
             if match:
                 account_name = match.groupdict()["account_name"]
                 out["account_name"] = account_name

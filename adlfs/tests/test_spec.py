@@ -2610,19 +2610,3 @@ def test_etag_normalized_form(storage):
 )
 def test_striping_etag(input_etag, expected_etag):
     assert _normalize_etag_quotes(input_etag) == expected_etag
-
-
-@pytest.mark.parametrize(
-    "url,expected_account_name",
-    [
-        ("abfs://myaccount.blob.core.windows.net/container/file", "myaccount"),
-        ("abfs://myaccount.blob.core.chinacloudapi.cn/container/file", "myaccount"),
-        ("abfs://myaccount.dfs.core.chinacloudapi.cn/container/file", "myaccount"),
-    ],
-)
-def test_get_kwargs_from_urls_sovereign_clouds(url, expected_account_name):
-    assert (
-        AzureBlobFileSystem._get_kwargs_from_urls(url).get("account_name")
-        == expected_account_name
-    )
-    assert AzureBlobFileSystem._strip_protocol(url) == "container/file"
